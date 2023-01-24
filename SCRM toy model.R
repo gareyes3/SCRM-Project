@@ -44,7 +44,7 @@ total_soil_dieoff = total_soil_dieoff_day*Days_after_flood
 #Contamination after soil dieoff to sampling
 log_cont_soil = log_cont_soil-total_soil_dieoff
 #prevalence in soil after dieoff
-Total_Prevalence = Total_Prevalence(1-((1-(10^log_cont_soil))/))
+Total_Prevalence = 1*(1-((1-(10^7))/10^9)^(10^9))
 
 if (soil_sampling == 1){
    total_cells <- (10^log_cont_soil)*(Ngrabs*Nmass)
