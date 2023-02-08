@@ -3,7 +3,7 @@ source("Library.R")
 source("Inputs.R")
 source("Nauta_Functions.R")
 
-#Other Baseic Functions
+#Other Basic Functions
 Growth_Model<-function(Temp, Time){
   b= 0.023
   Tmin = 1.2
@@ -18,8 +18,8 @@ Growth_Model<-function(Temp, Time){
 
 
 
-#Functions for specific unit operations
-#Initial Contamination
+#Functions for specific unit operations ------------------
+#Initial Contamination Standard Generic
 Initial_Cont_function<-function(Cont_Distribution,Prev_Distribution,Params_Cont, Params_Pre){
   #log CFU/g
   if (Cont_Distribution == "Normal"){
@@ -38,6 +38,12 @@ Initial_Cont_function<-function(Cont_Distribution,Prev_Distribution,Params_Cont,
 }
 
 
+#Initial Contamination Irrigation Water
+F_Cont_Ir_Water<-function(){
+  Trans_irr_water = rpert(Days, 1.8,21.6)
+}
+
+
 #Infield Die-off Lettuce
 Infield_dieoff_lettuce<-function (Cont,Prev,days_range){
   Days = round(runif(1,days_range[1],days_range[2]),0)
@@ -50,23 +56,28 @@ Infield_dieoff_lettuce<-function (Cont,Prev,days_range){
 
 Sample_func_Internal<-function(x, pdetect){
   #x is a vector of grabs
-  result = ifelse(x == 1, rbern(n=1,prob=pdetect), 0)
+  result = ifelse(x == 1, rbinom(n=1,size = 1,prob=pdetect), 0)
   return(result)
 }
 
 Produce_tesr_reject<-function (Cont, Prev, params){
   #params 1: sample mass
   #params 2: Ngrabs
-  Pdetect = 1-exp(-Cont*(params[1]/params[2])) #probability of detecting based on cont levels
-  srs_hits = rbern(n=params[2],prob=Prev) #if cont randomly dist, hit based on prevalence
+  Cont_Nlog = 10^Cont
+  Pdetect = 1-exp(-Cont_Nlog*(params[1]/params[2])) #probability of detecting based on cont levels
+  print(Pdetect)
+  srs_hits = rbinom(n=params[2], size = 1,prob=Prev) #if cont randomly dist, hit based on prevalence
   #print(srs_hits)
   Outcomes = sapply(X= srs_hits , FUN = Sample_func_Internal, pdetect = Pdetect ) #was contamination detected for each grab?
-  print (Outcomes)
-  if(sum(Outcomes)>0){
+  print(sum(Outcomes, na.rm=T))
+  if(sum(Outcomes, na.rm=T)>0){
     Prev <- 0
   }
   return (c(Cont, Prev))
 }
+
+rbern(n=60,prob=0.1)
+rbinom(n=60,1,0.1)
 
 F_Cross_Cont_Blades_Lettuce<-function(Cont_P, Prev,Cont_Env = Total_CFU_Blade, Tr_a = 0, Tr_b= Tr_blade_lettuce, CC_fac = harvest_CC_factor){
   Outs = Cross_Cont_Function(Cont_P,Prev, Cont_Env, Tr_a, Tr_b, CC_fac)
@@ -123,6 +134,7 @@ Func_DR_RServing<-function(Cont, Prev, Lot_Size, Lot_lb, Serving_size){
   beta<-229.2928
   pr_illness = (1-(1+dose/beta)^-alpha)*Prev
   N_cases = Total_Servings*pr_illness
-  return (N_cases)
+  Total = floor(N_cases) + rbinom(1,1,N_cases%%1)
+  
+  return (Total)
 }
-

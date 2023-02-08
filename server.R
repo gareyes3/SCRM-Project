@@ -29,13 +29,9 @@ Select_Event<-function(inputs, globalinputs, globalinputs2){
                                 days_range = c(globalinputs$FDO_Min,globalinputs$FDO_Max ) )
   } else if (inputs == "HS"){
     out = Produce_tesr_reject(Cont = globalinputs2$outs[1],
-                              Prev = globalinputs2$outs[2] , params = c(1500,60))
-  } else if (inputs == "DR"){
-    out= Func_DR_RServing(Cont = globalinputs2$outs[1],
-                          Prev = globalinputs2$outs[2],
-                          Lot_Size = globalinputs$Lot_Size, 
-                          Lot_lb =globalinputs$lb_per_lot, 
-                          Serving_size = globalinputs$portion_size)
+                              Prev = globalinputs2$outs[2] , params = c(globalinputs$HS_Mass,globalinputs$HS_Grabs))
+  } else if (inputs == "HC"){
+    out= F_Cross_Cont_Blades_Lettuce(Cont_P = globalinputs2$outs[1], Prev = globalinputs2$outs[2])
   }
   return (out)
 }
@@ -56,15 +52,26 @@ shinyServer(function(input, output, session) {
       }
       )
       
-      #Last step mus be Dr
       observeEvent(eventExpr = input$s3, handlerExpr = {
         global$outs = Select_Event(inputs =input$s3,globalinputs = input,globalinputs2 = global )
-        global$Drs<-c(global$Drs,global$outs)
+        #print(global$outs)
       }
       )
+      
+      observeEvent(eventExpr = input$portion_size, handlerExpr ={
+        global$outs = Func_DR_RServing(Cont = global$outs[1],
+                                       Prev = global$outs[2],
+                                       Lot_Size = input$Lot_Size, 
+                                       Lot_lb =input$lb_per_lot, 
+                                       Serving_size = input$portion_size)
+        global$Drs<-c(global$Drs,global$outs) 
+      })
+
     }
-    output$prout =renderText(paste("The probability of an Outbreak is ", (sum(global$Drs>2)/length(global$Drs>2))))   
-    output$s1=renderPlot(hist(global$Drs))
+    output$prout =renderText(paste("The probability of an Outbreak is ", (sum(global$Drs>=2)/length(global$Drs))))   
+    output$s1=renderPlot(hist(global$Drs,main="Illness 100 Iterations",
+                              xlab="Number of Ilness",
+                              ylab="Count",))
   }
   )
 })

@@ -7,7 +7,7 @@ sidebar = dashboardSidebar(
   
   sidebarMenu(
     id = "sidebarMenu",
-    menuItem(text = "Flexible Model", 
+    menuItem(text = "STEC Flexible Model", 
              tabName = "FlexibleModel")
   )
 )
@@ -15,11 +15,13 @@ sidebar = dashboardSidebar(
 
 
 Modules_list <- c(
-  "Initial Contamination Event" = "CE",
+  "Select Unit Operation"= "SEL",
+  "Initial Unknown Contamination Event" = "CE",
+  #"Contaminated Irrigation Water" = "CE_IW",
   "InField Dieoff" = "FDO",
   "Harvest Sampling" = "HS",
-  "Harvesting Blade Contamination" = "HC",
-  "Dose Response" = "DR"
+  "Harvesting Blade Contamination" = "HC"
+  #"Dose Response" = "DR"
 )
 
 
@@ -27,6 +29,12 @@ Modules_list <- c(
 flexible_model = fluidRow(
  box(title = "Felible Risk Model Steps", solidHeader = TRUE, status = "primary",
      #Lot Information
+     fluidRow(
+       column(width = 10,
+              h4("Lot Information")
+       )
+     ),
+     
      fluidRow(
        column(width = 10,
        splitLayout(
@@ -40,11 +48,18 @@ flexible_model = fluidRow(
        )
      ),
      
+     #Lot Information
+     fluidRow(
+       column(width = 10,
+              h4("Select Model Steps")
+       )
+     ),
+     
      #Step 1
      fluidRow(
        column( width = 10,
                selectInput(inputId = "s1",
-                           label = "Step 1",
+                           label = "Step 1:",
                            choices = Modules_list,
                            selected = Modules_list[1]
                ),#input 1
@@ -59,22 +74,22 @@ flexible_model = fluidRow(
                                 conditionalPanel(condition = "input.CEdist == 'Uniform'",
                                                  splitLayout(
                                                    numericInput(inputId = "Unifmin", 
-                                                                label = "Min", 
-                                                                value = 10),
+                                                                label = "Min log CFU/g", 
+                                                                value = 6),
                                                    numericInput(inputId = "Unifmax", 
-                                                                label = "Max", 
-                                                                value = 11))
+                                                                label = "Max log CFU/g", 
+                                                                value = 7))
                                 ),
                                 conditionalPanel(condition = "input.CEdist == 'Normal'",
                                                  splitLayout(
                                                    numericInput(inputId = "Normmean", 
-                                                                label = "Mean", 
+                                                                label = "Mean log CFU/g", 
                                                                 value = 5),
                                                    numericInput(inputId = "Normsd", 
-                                                                label = "SD", 
+                                                                label = "SD log CFU/g", 
                                                                 value = 2))
                                 )
-               ), #CE Condition 
+               ), 
                conditionalPanel(condition="input.s1 == 'FDO'",
                                 splitLayout(
                                   numericInput(inputId = "FDO_Min", 
@@ -101,12 +116,6 @@ flexible_model = fluidRow(
                                   numericInput(inputId = "HC_Tr_L_B", 
                                                label = "Transfer Coefficient Lettuce to Blade", 
                                                value = 0))   
-               ),#HC conditional Panel
-               conditionalPanel(condition="input.s1 == 'DR'",
-                                splitLayout(
-                                  numericInput(inputId = "portion_size", 
-                                               label = "Portion Size (g)", 
-                                               value = 170))   
                )
        )
      ),
@@ -114,9 +123,9 @@ flexible_model = fluidRow(
      fluidRow(
        column( width = 10,
                selectInput(inputId = "s2",
-                           label = "Step 2",
+                           label = "Step 2:",
                            choices = Modules_list,
-                           selected = Modules_list[2]
+                           selected = Modules_list[1]
                ),#input 1
                conditionalPanel(condition="input.s2 == 'CE'",
                                 selectInput(inputId = "CEdist",
@@ -171,13 +180,7 @@ flexible_model = fluidRow(
                                   numericInput(inputId = "HC_Tr_L_B", 
                                                label = "Transfer Coefficient Lettuce to Blade", 
                                                value = 0))   
-               ),#HC conditional Panel
-               conditionalPanel(condition="input.s2 == 'DR'",
-                                splitLayout(
-                                  numericInput(inputId = "portion_size", 
-                                               label = "Portion Size (g)", 
-                                               value = 170))   
-               )
+               )#HC conditional Panel
        )
      ),
      
@@ -185,9 +188,9 @@ flexible_model = fluidRow(
      fluidRow(
        column( width = 10,
                selectInput(inputId = "s3",
-                           label = "Step 3",
+                           label = "Step 3:",
                            choices = Modules_list,
-                           selected = Modules_list[2]
+                           selected = Modules_list[1]
                ),#input 1
                conditionalPanel(condition="input.s3 == 'CE'",
                                 selectInput(inputId = "CEdist",
@@ -242,15 +245,26 @@ flexible_model = fluidRow(
                                   numericInput(inputId = "HC_Tr_L_B", 
                                                label = "Transfer Coefficient Lettuce to Blade", 
                                                value = 0))   
-               ),#HC conditional Panel
-               conditionalPanel(condition="input.s3 == 'DR'",
-                                splitLayout(
-                                  numericInput(inputId = "portion_size", 
-                                               label = "Portion Size (g)", 
-                                               value = 170))   
                )
        )
      ),
+     
+     fluidRow(
+       column(width = 10,
+              h4("Dose Response")
+              )
+     ),
+     
+     fluidRow(
+       column(width = 6,
+            numericInput(inputId = "portion_size",
+                         label = "Serving Size (g)",
+                         value = 170
+              
+            )
+       )
+     ),
+     
      
      splitLayout(
        actionButton(inputId = "visualize_model", label = "Visualize"),
