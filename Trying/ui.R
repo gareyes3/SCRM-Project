@@ -109,7 +109,6 @@ flexible_model = fluidRow(
       
       
       splitLayout(
-        actionButton(inputId = "visualize_model", label = "Visualize"),
         actionButton(inputId = "iterate_model", label = "Iterate")
       )
       
@@ -119,7 +118,9 @@ flexible_model = fluidRow(
       #Stuff for outputs
       plotOutput(outputId = "s1"),
       p(),
-      uiOutput(outputId = "prout")
+      uiOutput(outputId = "prout"),
+      uiOutput(outputId = "contprev")
+      
       
   )
   

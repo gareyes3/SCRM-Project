@@ -32,16 +32,16 @@ f_options = function(input, Mod_list){
                                         value = 0.3),
                            numericInput(inputId = "CE_cont2", 
                                         label = "Max log CFU/g", 
-                                        value = 0.2))
+                                        value = 0.5))
         ),
         conditionalPanel(condition = "input.CEdist_cont == 'Normal'",
                          splitLayout(
                            numericInput(inputId = "CE_cont1", 
                                         label = "Mean log CFU/g", 
-                                        value = 0.1),
+                                        value = 0.5),
                            numericInput(inputId = "CE_cont2", 
                                         label = "SD log CFU/g", 
-                                        value = 0.6))
+                                        value = 0.1))
         ),
         selectInput(inputId = "CEdist_prev",
                     label = "Select Prevalence Distribution",
@@ -54,16 +54,16 @@ f_options = function(input, Mod_list){
                          splitLayout(
                            numericInput(inputId = "CE_prev1", 
                                         label = "Min Prevalence", 
-                                        value = 0.5),
+                                        value = 0.3),
                            numericInput(inputId = "CE_prev2", 
                                         label = "Max Prevalence", 
-                                        value = 0.2))
+                                        value = 0.8))
         ),
         conditionalPanel(condition = "input.CEdist_prev == 'Normal'",
                          splitLayout(
                            numericInput(inputId = "CE_prev1", 
                                         label = "Mean Prevalence", 
-                                        value = 0.5),
+                                        value = 0.8),
                            numericInput(inputId = "CE_prev2", 
                                         label = "SD Prevalence", 
                                         value = 1))
@@ -82,21 +82,21 @@ f_options = function(input, Mod_list){
              #Conditional panel if this happens
              conditionalPanel(condition = "input.FEdist_cont == 'Uniform'",
                               splitLayout(
-                                numericInput(inputId = "Unifmin_FE", 
+                                numericInput(inputId = "FE_cont1", 
                                              label = "Min log CFU/g", 
-                                             value = 0.3),
-                                numericInput(inputId = "Unifmax_FE", 
+                                             value = 0.1),
+                                numericInput(inputId = "FE_cont2", 
                                              label = "Max log CFU/g", 
-                                             value = 0.2))
+                                             value = 0.8))
              ),
              conditionalPanel(condition = "input.FEdist_cont == 'Normal'",
                               splitLayout(
-                                numericInput(inputId = "Normmean_FE", 
+                                numericInput(inputId = "FE_cont1", 
                                              label = "Mean log CFU/g", 
-                                             value = 0.1),
-                                numericInput(inputId = "Normsd_FE", 
+                                             value = 0.6),
+                                numericInput(inputId = "FE_cont2", 
                                              label = "SD log CFU/g", 
-                                             value = 0.6))
+                                             value = 0.1))
              ),
              selectInput(inputId = "FEdist_prev",
                          label = "Select Prevalence Distribution",
@@ -107,25 +107,27 @@ f_options = function(input, Mod_list){
              #Conditional panel if this happens
              conditionalPanel(condition = "input.FEdist_prev == 'Uniform'",
                               splitLayout(
-                                numericInput(inputId = "Unifmin_prev_FE", 
+                                numericInput(inputId = "FE_prev1", 
                                              label = "Min Prevalence", 
-                                             value = 0.5),
-                                numericInput(inputId = "Unifmax_prev_FE", 
+                                             value = 0.2),
+                                numericInput(inputId = "FE_prev2", 
                                              label = "Max Prevalence", 
-                                             value = 0.2))
+                                             value = 1))
              ),
              conditionalPanel(condition = "input.FEdist_prev == 'Normal'",
                               splitLayout(
-                                numericInput(inputId = "Normmean_prev_FE", 
+                                numericInput(inputId = "FE_prev1", 
                                              label = "Mean Prevalence", 
                                              value = 0.5),
-                                numericInput(inputId = "Normsd_prev_FE", 
+                                numericInput(inputId = "FE_prev2", 
                                              label = "SD Prevalence", 
-                                             value = 1))
+                                             value = 0.2))
              ), 
              offset = 1
              )
     )
+  }else if(input == "FDO"){
+    
   } else if (input == "HS"){
     fluidRow(
       column(width = 12,
@@ -153,25 +155,7 @@ f_options = function(input, Mod_list){
       )
     )
 
-  } else if (input == "FE"){
-    column(width = 12,
-           splitLayout(
-             numericInput(inputId = "FE_Mean_Cont", 
-                          label = "Mean Contamination in Soil after flood Log CFU/g", 
-                          value = 0.3),
-             numericInput(inputId = "FE_SD_Cont", 
-                          label = "SD Contamination in Soil after flood Log CFU/g", 
-                          value = 0.2)),
-           splitLayout(
-             numericInput(inputId = "FE_Mean_Prev", 
-                          label = "Minimum Prevalence in Soil", 
-                          value = 0.8),
-             numericInput(inputId = "FE_SD_Prev", 
-                          label = "Maximum Prevalence in Soil", 
-                          value = 1)),
-           offset = 1
-    )
-  } else if (input == "SDO"){
+  }  else if (input == "SDO"){
     column (width = 12,
             splitLayout(
               numericInput(inputId = "Day_FE_Min", 
@@ -184,8 +168,9 @@ f_options = function(input, Mod_list){
   }
 }
 
+
+
 f_add_selection =function(sequence){
-  print("hellow")
   fluidRow(
     column( width = 8,
             selectInput(inputId = paste0("s",sequence),

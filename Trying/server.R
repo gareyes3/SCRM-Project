@@ -9,30 +9,36 @@ source("Shiny Functions.R")
 
 
 Select_Event<-function(inputs, globalinputs, globalinputs2){
+
   
+  #FE, CE, FDO, HS, HC, 
   if (inputs == "FE"){
-    if (globalinputs$FEdist_cont == "Uniform"){
-      out = Initial_Cont_function(Cont_Distribution = globalinputs$FEdist_cont,
-                                  Prev_Distribution = Prev_Dist,
-                                  Params_Cont = c(globalinputs$Unifmin_FE, globalinputs$Unifmax_FE),
-                                  Params_Pre = Prev_Params)
-    } else if (globalinputs$FEdist_cont == "Normal") {
-      out = Initial_Cont_function(Cont_Distribution = globalinputs$FEdist_cont,
-                                  Prev_Distribution = Prev_Dist,
-                                  Params_Cont = c(globalinputs$Normmean_FE, globalinputs$Normsd_FE),
-                                  Params_Pre = Prev_Params)
-    }
+    two_params<-c("Uniform", "Normal")
+    three_params<-c("Pert", "Triangular")
     
-    if (globalinputs$FEdist_prev == "Uniform"){
-      out = Initial_Cont_function(Cont_Distribution = globalinputs$FEdist_prev,
-                                  Prev_Distribution = Prev_Dist,
-                                  Params_Cont = c(globalinputs$Unifmin_prev_FE, globalinputs$Unifmax_prev_FE),
-                                  Params_Pre = Prev_Params)
-    } else if (globalinputs$FEdist_prev == "Normal") {
-      out = Initial_Cont_function(Cont_Distribution = globalinputs$FEdist_prev,
-                                  Prev_Distribution = Prev_Dist,
-                                  Params_Cont = c(globalinputs$Normmean_prev_FE, globalinputs$Normsd_prev_FE),
-                                  Params_Pre = Prev_Params)
+    if (globalinputs$FEdist_cont%in%two_params && globalinputs$FEdist_prev%in%two_params ){
+      out = Initial_Cont_function(Cont_Distribution = globalinputs$FEdist_cont,
+                                  Prev_Distribution = globalinputs$FEdist_prev,
+                                  Params_Cont = c(globalinputs$FE_cont1, globalinputs$FE_cont2),
+                                  Params_Pre = c(globalinputs$FE_prev1,globalinputs$FE_prev2))
+      
+    } else if (globalinputs$FEdist_cont%in%two_params && globalinputs$FEdist_prev%in%three_params ){
+      out = Initial_Cont_function(Cont_Distribution = globalinputs$FEdist_cont,
+                                  Prev_Distribution = globalinputs$FEdist_prev,
+                                  Params_Cont = c(globalinputs$FE_cont1, globalinputs$FE_cont2),
+                                  Params_Pre = c(globalinputs$FE_prev1,globalinputs$FE_prev2, globalinputs$FE_prev3))
+      
+    }else if (globalinputs$FEdist_cont%in%three_params && globalinputs$FEdist_prev%in%two_params ){
+      out = Initial_Cont_function(Cont_Distribution = globalinputs$FEdist_cont,
+                                  Prev_Distribution = globalinputs$FEdist_prev,
+                                  Params_Cont = c(globalinputs$FE_cont1, globalinputs$FE_cont2,globalinputs$FE_cont3 ),
+                                  Params_Pre = c(globalinputs$FE_prev1,globalinputs$FE_prev2))
+      
+    } else if(globalinputs$FEdist_cont%in%three_params && globalinputs$FEdist_prev%in%three_params ){
+      out = Initial_Cont_function(Cont_Distribution = globalinputs$FEdist_cont,
+                                  Prev_Distribution = globalinputs$FEdist_prev,
+                                  Params_Cont = c(globalinputs$FE_cont1, globalinputs$FE_cont2,globalinputs$FE_cont3 ),
+                                  Params_Pre = c(globalinputs$FE_prev1,globalinputs$FE_prev2,globalinputs$FE_prev3))
     }
     
   } else if (inputs == "CE"){
@@ -41,22 +47,22 @@ Select_Event<-function(inputs, globalinputs, globalinputs2){
     
     if (globalinputs$CEdist%in%two_params && globalinputs$CEdist_prev%in%two_params ){
       out = Initial_Cont_function(Cont_Distribution = globalinputs$CEdist,
-                                  Prev_Distribution = Pglobalinputs$CEdist_prev,
+                                  Prev_Distribution = globalinputs$CEdist_prev,
                                   Params_Cont = c(globalinputs$CE_cont1, globalinputs$CE_cont2),
                                   Params_Pre = c(globalinputs$CE_prev1,globalinputs$CE_prev2))
     } else if (globalinputs$CEdist%in%two_params && globalinputs$CEdist_prev%in%three_params ){
       out = Initial_Cont_function(Cont_Distribution = globalinputs$CEdist,
-                                  Prev_Distribution = Pglobalinputs$CEdist_prev,
+                                  Prev_Distribution = globalinputs$CEdist_prev,
                                   Params_Cont = c(globalinputs$CE_cont1, globalinputs$CE_cont2),
                                   Params_Pre = c(globalinputs$CE_prev1,globalinputs$CE_prev2, globalinputs$CE_prev3))
     }else if (globalinputs$CEdist%in%three_params && globalinputs$CEdist_prev%in%two_params ){
       out = Initial_Cont_function(Cont_Distribution = globalinputs$CEdist,
-                                  Prev_Distribution = Pglobalinputs$CEdist_prev,
+                                  Prev_Distribution = globalinputs$CEdist_prev,
                                   Params_Cont = c(globalinputs$CE_cont1, globalinputs$CE_cont2,globalinputs$CE_cont3 ),
                                   Params_Pre = c(globalinputs$CE_prev1,globalinputs$CE_prev2))
     } else if(globalinputs$CEdist%in%three_params && globalinputs$CEdist_prev%in%three_params ){
       out = Initial_Cont_function(Cont_Distribution = globalinputs$CEdist,
-                                  Prev_Distribution = Pglobalinputs$CEdist_prev,
+                                  Prev_Distribution = globalinputs$CEdist_prev,
                                   Params_Cont = c(globalinputs$CE_cont1, globalinputs$CE_cont2,globalinputs$CE_cont3 ),
                                   Params_Pre = c(globalinputs$CE_prev1,globalinputs$CE_prev2,globalinputs$CE_prev3))
     }
@@ -64,19 +70,18 @@ Select_Event<-function(inputs, globalinputs, globalinputs2){
   } else if (inputs == "FDO") {
     out =Infield_dieoff_lettuce(Cont = globalinputs2$outs[1],
                                 Prev = globalinputs2$outs[2],
-                                days_range = c(globalinputs$FDO_Min,globalinputs$FDO_Max ) )
+                                Days = globalinputs2$days )
   } else if (inputs == "HS"){
     out = Produce_tesr_reject(Cont = globalinputs2$outs[1],
                               Prev = globalinputs2$outs[2] , params = c(globalinputs$HS_Mass,globalinputs$HS_Grabs))
   } else if (inputs == "HC"){
     out= F_Cross_Cont_Blades_Lettuce(Cont_P = globalinputs2$outs[1], Prev = globalinputs2$outs[2])
-  } else if (inputs == "FE"){
-    out= F_Cross_Cont_Blades_Lettuce(Cont_P = globalinputs2$outs[1], Prev = globalinputs2$outs[2])
-  }
+  } 
   return (out)
 }
 
 shinyServer(function(input, output, session) {
+  
   
   rvals1<-reactiveValues(sequence = 1)
   
@@ -143,11 +148,16 @@ shinyServer(function(input, output, session) {
     for (i in 1:100){
       source("Inputs.R")
       
-    
-      global<-reactiveValues(outs =c(0,0), Drs = c())
+      global<-reactiveValues(outs =c(0,0), Drs = c(), days =NULL)
+      
+      #Loading days per of preharvest
+      observeEvent(eventExpr =input$Day_min, handlerExpr = {
+        global$days = F_growing_season_days(min = input$Day_min, mode = input$Day_Mode, max = input$Day_Max)
+      })
       
       #Event 1
       observeEvent(eventExpr = input$s1, handlerExpr = {
+        print(global$outs)
         global$outs = Select_Event(inputs =input$s1,globalinputs = input, globalinputs2 = global)
       }
       )
@@ -188,6 +198,7 @@ shinyServer(function(input, output, session) {
     output$s1=renderPlot(hist(global$Drs,main="Illness 100 Iterations",
                               xlab="Number of Ilness",
                               ylab="Count"))
+    output$contprev = renderText(global$outs)
   }
   )
 })

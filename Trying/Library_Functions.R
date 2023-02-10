@@ -16,6 +16,11 @@ Growth_Model<-function(Temp, Time){
   return (growth)
 }
 
+#Select growing season length (days)
+F_growing_season_days<-function(min,mode,max){
+  days<-round(mc2d::rpert(n=1,min=min,mode=mode,max=max),0)
+  return (days)
+}
 
 
 #Functions for specific unit operations ------------------
@@ -55,8 +60,8 @@ F_Cont_Ir_Water<-function(){
 
 
 #Infield Die-off Lettuce
-Infield_dieoff_lettuce<-function (Cont,Prev,days_range){
-  Days = round(runif(1,days_range[1],days_range[2]),0)
+Infield_dieoff_lettuce<-function (Cont,Prev,Days){
+  #Days = round(runif(1,days_range[1],days_range[2]),0)
   Reduction = -(Days/(0.245/24))^0.3
   Outs = Inactivation_Function(Cont = Cont,Prev =Prev ,logred = Reduction)
   return (c(Outs[1],Outs[2]))
