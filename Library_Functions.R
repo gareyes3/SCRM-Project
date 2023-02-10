@@ -39,6 +39,26 @@ Initial_Cont_function<-function(Cont_Distribution,Prev_Distribution,Params_Cont,
   return (c(Contamination, Prevalence))
 }
 
+
+#Flood Contamination Function
+Initial_Cont_function_flood<-function(Cont_Distribution,Prev_Distribution,Params_Cont, Params_Pre){
+  #log CFU/g
+  if (Cont_Distribution == "Normal"){
+    Contamination<-rnorm(1,Params_Cont[1],Params_Cont[2])
+  } else if (Cont_Distribution == "Uniform") {
+    Contamination<-runif(1,Params_Cont[1],Params_Cont[2])
+  }
+  
+  if (Prev_Distribution == "Normal"){
+    Prevalence<-rnorm(1,Params_Pre[1],Params_Pre[2])
+  } else if (Prev_Distribution == "Uniform") {
+    Prevalence<-runif(1,Params_Pre[1],Params_Pre[2])
+  }
+  return (c(Contamination, Prevalence))
+}
+
+
+
 #Soil Die off
 Infield_dieoff_soil<-function (Cont,Prev,days_range){
   Days = round(runif(1,days_range[1],days_range[2]),0)

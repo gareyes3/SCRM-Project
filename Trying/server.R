@@ -10,17 +10,55 @@ source("Shiny Functions.R")
 
 Select_Event<-function(inputs, globalinputs, globalinputs2){
   
-  if (inputs == "CE"){
-    if (globalinputs$CEdist == "Uniform"){
-      out = Initial_Cont_function(Cont_Distribution = globalinputs$CEdist,
+  if (inputs == "FE"){
+    if (globalinputs$FEdist_cont == "Uniform"){
+      out = Initial_Cont_function(Cont_Distribution = globalinputs$FEdist_cont,
                                   Prev_Distribution = Prev_Dist,
-                                  Params_Cont = c(globalinputs$Unifmin, globalinputs$Unifmax),
+                                  Params_Cont = c(globalinputs$Unifmin_FE, globalinputs$Unifmax_FE),
                                   Params_Pre = Prev_Params)
-    } else if (globalinputs$CEdist == "Normal") {
-      out = Initial_Cont_function(Cont_Distribution = globalinputs$CEdist,
+    } else if (globalinputs$FEdist_cont == "Normal") {
+      out = Initial_Cont_function(Cont_Distribution = globalinputs$FEdist_cont,
                                   Prev_Distribution = Prev_Dist,
-                                  Params_Cont = c(globalinputs$Normmean, globalinputs$Normsd),
+                                  Params_Cont = c(globalinputs$Normmean_FE, globalinputs$Normsd_FE),
                                   Params_Pre = Prev_Params)
+    }
+    
+    if (globalinputs$FEdist_prev == "Uniform"){
+      out = Initial_Cont_function(Cont_Distribution = globalinputs$FEdist_prev,
+                                  Prev_Distribution = Prev_Dist,
+                                  Params_Cont = c(globalinputs$Unifmin_prev_FE, globalinputs$Unifmax_prev_FE),
+                                  Params_Pre = Prev_Params)
+    } else if (globalinputs$FEdist_prev == "Normal") {
+      out = Initial_Cont_function(Cont_Distribution = globalinputs$FEdist_prev,
+                                  Prev_Distribution = Prev_Dist,
+                                  Params_Cont = c(globalinputs$Normmean_prev_FE, globalinputs$Normsd_prev_FE),
+                                  Params_Pre = Prev_Params)
+    }
+    
+  } else if (inputs == "CE"){
+    two_params<-c("Uniform", "Normal")
+    three_params<-c("Pert", "Triangular")
+    
+    if (globalinputs$CEdist%in%two_params && globalinputs$CEdist_prev%in%two_params ){
+      out = Initial_Cont_function(Cont_Distribution = globalinputs$CEdist,
+                                  Prev_Distribution = Pglobalinputs$CEdist_prev,
+                                  Params_Cont = c(globalinputs$CE_cont1, globalinputs$CE_cont2),
+                                  Params_Pre = c(globalinputs$CE_prev1,globalinputs$CE_prev2))
+    } else if (globalinputs$CEdist%in%two_params && globalinputs$CEdist_prev%in%three_params ){
+      out = Initial_Cont_function(Cont_Distribution = globalinputs$CEdist,
+                                  Prev_Distribution = Pglobalinputs$CEdist_prev,
+                                  Params_Cont = c(globalinputs$CE_cont1, globalinputs$CE_cont2),
+                                  Params_Pre = c(globalinputs$CE_prev1,globalinputs$CE_prev2, globalinputs$CE_prev3))
+    }else if (globalinputs$CEdist%in%three_params && globalinputs$CEdist_prev%in%two_params ){
+      out = Initial_Cont_function(Cont_Distribution = globalinputs$CEdist,
+                                  Prev_Distribution = Pglobalinputs$CEdist_prev,
+                                  Params_Cont = c(globalinputs$CE_cont1, globalinputs$CE_cont2,globalinputs$CE_cont3 ),
+                                  Params_Pre = c(globalinputs$CE_prev1,globalinputs$CE_prev2))
+    } else if(globalinputs$CEdist%in%three_params && globalinputs$CEdist_prev%in%three_params ){
+      out = Initial_Cont_function(Cont_Distribution = globalinputs$CEdist,
+                                  Prev_Distribution = Pglobalinputs$CEdist_prev,
+                                  Params_Cont = c(globalinputs$CE_cont1, globalinputs$CE_cont2,globalinputs$CE_cont3 ),
+                                  Params_Pre = c(globalinputs$CE_prev1,globalinputs$CE_prev2,globalinputs$CE_prev3))
     }
     
   } else if (inputs == "FDO") {
@@ -134,9 +172,7 @@ shinyServer(function(input, output, session) {
       }
       )
       
-      
-      
-      
+    
       #Dose Response
       observeEvent(eventExpr = input$portion_size, handlerExpr ={
         global$outs = Func_DR_RServing(Cont = global$outs[1],
@@ -151,7 +187,7 @@ shinyServer(function(input, output, session) {
     output$prout =renderText(paste("The probability of an Outbreak is ", (sum(global$Drs>=2)/length(global$Drs))))   
     output$s1=renderPlot(hist(global$Drs,main="Illness 100 Iterations",
                               xlab="Number of Ilness",
-                              ylab="Count",))
+                              ylab="Count"))
   }
   )
 })

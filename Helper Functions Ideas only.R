@@ -12,3 +12,5 @@ observeEvent(eventExpr = {input[[paste0("as_",rvals1$sequence)]]}, handlerExpr =
 observeEvent(eventExpr = {input[[paste0("s",rvals1$sequence)]]}, handlerExpr = {
   output[[paste0("ui_ops",rvals1$sequence)]] = renderUI(expr={f_options(input = input[[paste0("s",rvals1$sequence)]])})
 })
+
+

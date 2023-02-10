@@ -35,7 +35,7 @@ flexible_model = fluidRow(
                               label ="Lot Size (Acres)",
                               value = 45),
                  numericInput(inputId = "lb_per_lot",
-                              label ="lb per lot",
+                              label ="Pounds per Acre",
                               value = 38000)
                )
         )
@@ -43,15 +43,16 @@ flexible_model = fluidRow(
       
       fluidRow(
         column(width = 10,
+               h5("Growing Season Length (Days)"),
                splitLayout(
                  numericInput(inputId = "Day_min",
-                              label ="Min Days/growing season",
+                              label ="Minumum (Days)",
                               value = 34),
                  numericInput(inputId = "Day_Mode",
-                              label ="Min Days/growing season",
+                              label ="Most Likely (Days)",
                               value = 36.8),
                  numericInput(inputId = "Day_Max",
-                              label ="Max Days/growing seaso",
+                              label ="Maximum (Days)",
                               value = 42)
                )
         )
