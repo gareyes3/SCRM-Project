@@ -16,6 +16,11 @@ Growth_Model<-function(Temp, Time){
   return (growth)
 }
 
+#Select growing season length (days)
+F_growing_season_days<-function(min,mode,max){
+  days<-round(mc2d::rpert(n=1,min=min,mode=mode,max=max),0)
+  return (days)
+}
 
 
 #Functions for specific unit operations ------------------
@@ -39,29 +44,9 @@ Initial_Cont_function<-function(Cont_Distribution,Prev_Distribution,Params_Cont,
   return (c(Contamination, Prevalence))
 }
 
-
-#Flood Contamination Function
-Initial_Cont_function_flood<-function(Cont_Distribution,Prev_Distribution,Params_Cont, Params_Pre){
-  #log CFU/g
-  if (Cont_Distribution == "Normal"){
-    Contamination<-rnorm(1,Params_Cont[1],Params_Cont[2])
-  } else if (Cont_Distribution == "Uniform") {
-    Contamination<-runif(1,Params_Cont[1],Params_Cont[2])
-  }
-  
-  if (Prev_Distribution == "Normal"){
-    Prevalence<-rnorm(1,Params_Pre[1],Params_Pre[2])
-  } else if (Prev_Distribution == "Uniform") {
-    Prevalence<-runif(1,Params_Pre[1],Params_Pre[2])
-  }
-  return (c(Contamination, Prevalence))
-}
-
-
-
 #Soil Die off
-Infield_dieoff_soil<-function (Cont,Prev,days_range){
-  Days = round(runif(1,days_range[1],days_range[2]),0)
+Infield_dieoff_soil<-function (Cont,Prev,Days){
+  #Days = round(runif(1,days_range[1],days_range[2]),0)
   Reduction = -(Days/(137/24))^0.96
   Outs = Inactivation_Function(Cont = Cont,Prev =Prev ,logred = Reduction)
   return (c(Outs[1],Outs[2]))
@@ -74,9 +59,32 @@ F_Cont_Ir_Water<-function(){
 }
 
 
+#Irrigation and rain splash conts functions
+is_sunny = function(days, raindays){
+  Sp_P_Sun <- 1 - (raindays/days)
+  Sp_Sun <- rbinom(days, 1, Sp_P_Sun)
+  return(Sp_Sun)
+}
+
+fc_rsp <-  function(contamsoil,prev, soiltrans, ec2plant, sunny_yn){
+  P_Rain_Sp <- 1
+  C_RSp <- (10^(contamsoil) * soiltrans * ec2plant * P_Rain_Sp * (1 - sunny_yn))
+  szn_sum <- sum(C_RSp)
+  log_trans <-  round(log10(szn_sum),2)
+  return(c(log_trans, prev))
+}
+
+fc_irrsp <-  function(contamsoil, prev, soiltrans, ec2plant,irrsp_yn, sunny_yn){
+  C_IrrSp <- (10^(contamsoil) * soiltrans * ec2plant * irrsp_yn * sunny_yn)
+  szn_sum <- sum(C_IrrSp)
+  log_trans <-  round(log10(szn_sum),2)
+  return(c(log_trans, prev))
+}
+
+
 #Infield Die-off Lettuce
-Infield_dieoff_lettuce<-function (Cont,Prev,days_range){
-  Days = round(runif(1,days_range[1],days_range[2]),0)
+Infield_dieoff_lettuce<-function (Cont,Prev,Days){
+  #Days = round(runif(1,days_range[1],days_range[2]),0)
   Reduction = -(Days/(0.245/24))^0.3
   Outs = Inactivation_Function(Cont = Cont,Prev =Prev ,logred = Reduction)
   return (c(Outs[1],Outs[2]))
