@@ -1,6 +1,6 @@
 #Library Functions
 source("Library.R")
-source("Inputs.R")
+#source("Inputs.R")
 source("Nauta_Functions.R")
 
 #Other Basic Functions
@@ -156,7 +156,7 @@ F_Cross_Cont_Shaker_Let<-function(Cont_P, Prev,Cont_Env =Cont_Shaker, Tr_a = Tr_
 }
 
 
-#Conveyor Centrigure
+#Conveyor Centrifuge
 F_Cross_Cont_Centrifuge_Let<-function(Cont_P, Prev,Cont_Env =Cont_Centrifuge, Tr_a = Tr_Centrifuge_Lettuce, Tr_b= Tr_Lettuce_Centrifuge, CC_fac = harvest_CC_factor){
   Outs = Cross_Cont_Function(Cont_P,Prev, Cont_Env, Tr_a, Tr_b, CC_fac)
   return(c(Outs[1], Outs[2]))
@@ -171,8 +171,9 @@ Func_DR_RServing<-function(Cont, Prev, Lot_Size, Lot_lb, Serving_size){
   alpha<-0.267
   beta<-229.2928
   pr_illness = (1-(1+dose/beta)^-alpha)*Prev
+  print(pr_illness)
   N_cases = Total_Servings*pr_illness
+  print(N_cases)
   Total = floor(N_cases) + rbinom(1,1,N_cases%%1)
-  
   return (Total)
 }
