@@ -19,7 +19,7 @@ sidebar = dashboardSidebar(
 
 
 flexible_model = fluidRow(
-  box(title = "Felible Risk Model Steps", solidHeader = TRUE, status = "primary",
+  box(title = "Flexible Risk Model Steps", solidHeader = TRUE, status = "primary",
       #Lot Information
       fluidRow(
         column(width = 10,

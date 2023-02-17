@@ -3,6 +3,29 @@ source("Library.R")
 #source("Inputs.R")
 source("Nauta_Functions.R")
 
+
+#Helper Functions
+get_value_dist<-function(Distribution, params){
+  if (length(params) ==2){
+    if (Distribution == "Uniform"){
+      out = runif(1,params[1], params[2])
+    } else if (Distribution == "Normal"){
+      out = rnorm(1,params[1], params[2])
+    }
+  }
+  if (length(params) ==3){
+    if (Distribution == "Pert"){
+      out = rpert(1,params[1], params[2], params[3] )
+    } else if (Distribution == "Pert"){
+      out = rtriang(1,params[1], params[2], params[3] )
+    }
+  }
+  return (out)
+}
+
+
+
+
 #Other Basic Functions
 Growth_Model<-function(Temp, Time){
   b= 0.023
@@ -43,6 +66,13 @@ Initial_Cont_function<-function(Cont_Distribution,Prev_Distribution,Params_Cont,
   
   return (c(Contamination, Prevalence))
 }
+
+Initial_Cont_function2<-function(Cont, Prev){
+
+  return (c(Cont, Prev))
+}
+
+
 
 #Soil Die off
 Infield_dieoff_soil<-function (Cont,Prev,Days){
@@ -170,7 +200,7 @@ Func_DR_RServing<-function(Cont, Prev, Lot_Size, Lot_lb, Serving_size){
   dose = (10^Cont)*Serving_size
   alpha<-0.267
   beta<-229.2928
-  pr_illness = (1-(1+dose/beta)^-alpha)*Prev
+  pr_illness = (1-(1+dose/beta)^-alpha)#*Prev
   print(pr_illness)
   N_cases = Total_Servings*pr_illness
   print(N_cases)
