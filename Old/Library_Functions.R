@@ -1,7 +1,30 @@
 #Library Functions
 source("Library.R")
-source("Inputs.R")
+#source("Inputs.R")
 source("Nauta_Functions.R")
+
+
+#Helper Functions
+get_value_dist<-function(Distribution, params){
+  if (length(params) ==2){
+    if (Distribution == "Uniform"){
+      out = runif(1,params[1], params[2])
+    } else if (Distribution == "Normal"){
+      out = rnorm(1,params[1], params[2])
+    }
+  }
+  if (length(params) ==3){
+    if (Distribution == "Pert"){
+      out = rpert(1,params[1], params[2], params[3] )
+    } else if (Distribution == "Pert"){
+      out = rtriang(1,params[1], params[2], params[3] )
+    }
+  }
+  return (out)
+}
+
+
+
 
 #Other Basic Functions
 Growth_Model<-function(Temp, Time){
@@ -16,6 +39,11 @@ Growth_Model<-function(Temp, Time){
   return (growth)
 }
 
+#Select growing season length (days)
+F_growing_season_days<-function(min,mode,max){
+  days<-round(mc2d::rpert(n=1,min=min,mode=mode,max=max),0)
+  return (days)
+}
 
 
 #Functions for specific unit operations ------------------
@@ -39,29 +67,16 @@ Initial_Cont_function<-function(Cont_Distribution,Prev_Distribution,Params_Cont,
   return (c(Contamination, Prevalence))
 }
 
+Initial_Cont_function2<-function(Cont, Prev){
 
-#Flood Contamination Function
-Initial_Cont_function_flood<-function(Cont_Distribution,Prev_Distribution,Params_Cont, Params_Pre){
-  #log CFU/g
-  if (Cont_Distribution == "Normal"){
-    Contamination<-rnorm(1,Params_Cont[1],Params_Cont[2])
-  } else if (Cont_Distribution == "Uniform") {
-    Contamination<-runif(1,Params_Cont[1],Params_Cont[2])
-  }
-  
-  if (Prev_Distribution == "Normal"){
-    Prevalence<-rnorm(1,Params_Pre[1],Params_Pre[2])
-  } else if (Prev_Distribution == "Uniform") {
-    Prevalence<-runif(1,Params_Pre[1],Params_Pre[2])
-  }
-  return (c(Contamination, Prevalence))
+  return (c(Cont, Prev))
 }
 
 
 
 #Soil Die off
-Infield_dieoff_soil<-function (Cont,Prev,days_range){
-  Days = round(runif(1,days_range[1],days_range[2]),0)
+Infield_dieoff_soil<-function (Cont,Prev,Days){
+  #Days = round(runif(1,days_range[1],days_range[2]),0)
   Reduction = -(Days/(137/24))^0.96
   Outs = Inactivation_Function(Cont = Cont,Prev =Prev ,logred = Reduction)
   return (c(Outs[1],Outs[2]))
@@ -74,9 +89,32 @@ F_Cont_Ir_Water<-function(){
 }
 
 
+#Irrigation and rain splash conts functions
+is_sunny = function(days, raindays){
+  Sp_P_Sun <- 1 - (raindays/days)
+  Sp_Sun <- rbinom(days, 1, Sp_P_Sun)
+  return(Sp_Sun)
+}
+
+fc_rsp <-  function(contamsoil,prev, soiltrans, ec2plant, sunny_yn){
+  P_Rain_Sp <- 1
+  C_RSp <- (10^(contamsoil) * soiltrans * ec2plant * P_Rain_Sp * (1 - sunny_yn))
+  szn_sum <- sum(C_RSp)
+  log_trans <-  round(log10(szn_sum),2)
+  return(c(log_trans, prev))
+}
+
+fc_irrsp <-  function(contamsoil, prev, soiltrans, ec2plant,irrsp_yn, sunny_yn){
+  C_IrrSp <- (10^(contamsoil) * soiltrans * ec2plant * irrsp_yn * sunny_yn)
+  szn_sum <- sum(C_IrrSp)
+  log_trans <-  round(log10(szn_sum),2)
+  return(c(log_trans, prev))
+}
+
+
 #Infield Die-off Lettuce
-Infield_dieoff_lettuce<-function (Cont,Prev,days_range){
-  Days = round(runif(1,days_range[1],days_range[2]),0)
+Infield_dieoff_lettuce<-function (Cont,Prev,Days){
+  #Days = round(runif(1,days_range[1],days_range[2]),0)
   Reduction = -(Days/(0.245/24))^0.3
   Outs = Inactivation_Function(Cont = Cont,Prev =Prev ,logred = Reduction)
   return (c(Outs[1],Outs[2]))
@@ -148,7 +186,7 @@ F_Cross_Cont_Shaker_Let<-function(Cont_P, Prev,Cont_Env =Cont_Shaker, Tr_a = Tr_
 }
 
 
-#Conveyor Centrigure
+#Conveyor Centrifuge
 F_Cross_Cont_Centrifuge_Let<-function(Cont_P, Prev,Cont_Env =Cont_Centrifuge, Tr_a = Tr_Centrifuge_Lettuce, Tr_b= Tr_Lettuce_Centrifuge, CC_fac = harvest_CC_factor){
   Outs = Cross_Cont_Function(Cont_P,Prev, Cont_Env, Tr_a, Tr_b, CC_fac)
   return(c(Outs[1], Outs[2]))
@@ -162,9 +200,10 @@ Func_DR_RServing<-function(Cont, Prev, Lot_Size, Lot_lb, Serving_size){
   dose = (10^Cont)*Serving_size
   alpha<-0.267
   beta<-229.2928
-  pr_illness = (1-(1+dose/beta)^-alpha)*Prev
+  pr_illness = (1-(1+dose/beta)^-alpha)#*Prev
+  print(pr_illness)
   N_cases = Total_Servings*pr_illness
+  print(N_cases)
   Total = floor(N_cases) + rbinom(1,1,N_cases%%1)
-  
   return (Total)
 }

@@ -1,6 +1,9 @@
-#Nauta Dynamic Functions
+#Functions for SCRM Model. One function per model step.
 
-Inactivation_Function<-function(Cont,Prev,logred){
+#Basic Processes ---------------------------------------------------------------
+
+##Inactivation
+F_BP_Inactivation<-function(Cont,Prev,logred){
   #Cont: Should be in log scale (log CFUs)
   #Prev: should be a number between 0 and 1
   #log red: is the expected log reduction.
@@ -9,7 +12,8 @@ Inactivation_Function<-function(Cont,Prev,logred){
   return(c(Cont_out, Prev_out))
 }
 
-Growth_Function<-function(Cont,Prev,Growth, popmax){
+##Growth
+F_BP_Growth<-function(Cont,Prev,Growth, popmax){
   #Cont: Should be in log scale (log CFUs)
   #Prev: should be a number between 0 and 1
   #growth: is the expected log reduction.
@@ -21,7 +25,8 @@ Growth_Function<-function(Cont,Prev,Growth, popmax){
   return(c(Cont_out, Prev))
 }
 
-Cross_Cont_Function<-function(Cont_P,Prev,Cont_Env, Tr_a, Tr_b, CC_fac){
+#Cross-Contamination
+F_BP_CrossContamination<-function(Cont_P,Prev,Cont_Env, Tr_a, Tr_b, CC_fac){
   #Cont P is the total number of cells in P
   #Cont Env is the total number of cells in the environment
   #Tr_a is the transfer coefficient from prod to env
@@ -34,9 +39,12 @@ Cross_Cont_Function<-function(Cont_P,Prev,Cont_Env, Tr_a, Tr_b, CC_fac){
   
   #Prevalence
   Prev_Out <- CC_fac*Prev/(1-Prev+CC_fac*Prev)
-  
   return(c(log10(N_prod),Prev_Out))
 }
 
 
-#
+#Model Steps -------------------------------------------------------------------
+
+F_CE_Flooding<-function(Cont){
+  
+}
