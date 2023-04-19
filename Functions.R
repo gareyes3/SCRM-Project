@@ -45,6 +45,23 @@ F_BP_CrossContamination<-function(Cont_P,Prev,Cont_Env, Tr_a, Tr_b, CC_fac){
 
 #Model Steps -------------------------------------------------------------------
 
-F_CE_Flooding<-function(Cont){
+#Contamination Events
+F_CE_Generic<-function(ContIn, ContCE){
+  #ContIn = log CFU/g, contamination added by CE
+  #ContCE = CFU/g, contamination before CE
+  if(ContIn == -Inf){
+    Cont_Out = log10(ContCE)
+  } else {
+    Cont_Out = ContIn + log10(ContCE)
+  }
+  return(Cont_Out)
+}
+
+
+#Pre harvest Module
+for (i in 1:Preharvest_Days){
+  IsSunny = rbinom(1,IC_PrSunnyDay)
   
 }
+
+
