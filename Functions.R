@@ -58,10 +58,37 @@ F_CE_Generic<-function(ContIn, ContCE){
 }
 
 
+#Dieoff_Preharvest
+F_DieoffProduce <-function(ContIn){
+  if (ContIn == 0){
+    ContRed = 0
+  } else{
+    Red = -(1/(2.45/24))^0.3
+    print(Red)
+    ContRed = log10(ContIn) + Red
+  }
+
+  return(ContRed)
+}
+
+F_DieoffProduce(0)
+
 #Pre harvest Module
+Preharvest_Days = 45
+
+Soil_Cont = 5 #CFU/g
+Lettuce_Cont = 0 #CFU/g
 for (i in 1:Preharvest_Days){
-  IsSunny = rbinom(1,IC_PrSunnyDay)
+  #IsSunny = rbinom(1,IC_PrSunnyDay)
+  IsRainy = rbinom(1,IC_PrRainnyDay)
+  IsIrr = rbinom(1,IC_PrIrr)
   
+  if (IsRainy == 1){
+    
+  }
+   if (IsIrr == 1){
+     
+   }
 }
 
 
