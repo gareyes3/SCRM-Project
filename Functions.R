@@ -67,22 +67,30 @@ F_DieoffProduce <-function(ContIn){
     print(Red)
     ContRed = log10(ContIn) + Red
   }
-
   return(ContRed)
 }
 
-F_DieoffProduce(0)
+
+
+
 
 #Pre harvest Module
+
+#Allende
 Preharvest_Days = 45
 
+IR_EcoliContSoil = rnorm(1,0.549,0.816) #log CFU/g
+IR_EcoliSoilPlant = runif(IR_Days, 0.35,0.9) #Percentage
+
+#Probability of a Sunny Day
+IC_PrSunnyDay = 1-IR_RainyDays/IR_Days
+IC_IsSunny = rbinom(IR_Days, 1, IC_PrSunnyDay)
+
+
 Soil_Cont = 5 #CFU/g
-Lettuce_Cont = 0 #CFU/g
+IsSunny = rbinom(Preharvest_Days,IC_PrSunnyDay)
+IsIrr_v = rbinom(Preharvest_Days,IC_PrIrr)
 for (i in 1:Preharvest_Days){
-  #IsSunny = rbinom(1,IC_PrSunnyDay)
-  IsRainy = rbinom(1,IC_PrRainnyDay)
-  IsIrr = rbinom(1,IC_PrIrr)
-  
   if (IsRainy == 1){
     
   }
