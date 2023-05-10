@@ -49,14 +49,15 @@ F_Sampling<-function(ContIn, Prev = 1){
 
 #Vector for Inputs
 ## General
+
 IR_Days_V<- c()
 IR_RainyDays_V<-c()
 IR_SunHoursDay_V<-c()
 IS_Dieoff_Coeff_V<-c()
-## Water Qual
+## Water Quality
 IR_Pr_EcoliIrrWater_V<-c()
 IR_ContIrrWater_V<-c()
-## Soil Qual
+## Soil Quality
 IR_ContSoil_V<-c()
 ## Irrigation
 IR_TransIrrWater_V<-c()
@@ -70,7 +71,7 @@ IR_Pr_EcoliSoiltoPlant_V<-c()
 #Output
 Contamination_V<-c()
 
-for (j in 1:1000){
+for (j in 1:10000){
   
   #Selecting Season
   IS_Seasons = c("Spring", "Winter", "Summer")
