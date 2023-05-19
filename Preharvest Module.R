@@ -1,4 +1,4 @@
-#Preharvest Logistics
+
 
 ###FUNCTIONS ####
 
@@ -159,6 +159,13 @@ for (j in 1:10000){
   Sampling_Days = c(1, IR_Days%/%2, IR_Days-2)
   
   Contamination = 0 #CFU/g
+  
+  ### Irrigation Holding ##
+  IC_Irrigation_Holding  = 1
+  IR_Irrigation_Holding_days<-round(runif(1,2,8),0)
+  
+  
+  ### Process Model ###
   
   Sampling_Results<-c()
   for (i in 1:IR_Days){
