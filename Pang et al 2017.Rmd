@@ -1,0 +1,143 @@
+---
+title: "Pang et al 2017"
+output: html_document
+date: "2023-06-05"
+---
+#Libraries
+```{r}
+library(truncnorm)
+library(fitdistrplus)
+library(EnvStats)
+library(mc2d)
+```
+
+
+#Preharvest Module
+
+## concentration after irrigation
+```{r}
+Ci_v<-c()
+for (i in 1:100000){
+ Cw = runif(1,1,235)
+  Rw = 10^rtruncnorm(1,-Inf, 0, -1.9, 0.6)
+  W = 10^rtruncnorm(1,0, Inf, 0.108, 0.019)
+  Ci = (Cw/100)*Rw*W 
+  Ci_v<-c(Ci_v, Ci)
+}
+
+#CFU/g
+hist(Ci_v) 
+
+descdist(Ci_v)
+
+fit.gamma<-fitdist(Ci_v, "gamma")
+fit.weibull<-fitdist(Ci_v, "weibull")
+
+plot(fit.gamma)
+plot(fit.weibull)
+
+hist(rgamma(10000,0.523, 10.96))
+hist(rweibull(n = 10000, shape = 0.643,scale = 0.0321))
+```
+
+## Concentration after irrigation + Holding Reduction
+
+```{r}
+Ci_v<-c()
+dhold_v<-c()
+for (i in 1:10000){
+  #Concentration after irrigation
+ Cw = runif(1,1,235)
+  Rw = 10^rtruncnorm(1,-Inf, 0, -1.9, 0.6)
+  W = 10^rtruncnorm(1,0, Inf, 0.108, 0.019)
+  Ci = (Cw/100)*Rw*W 
+  Ci_v<-c(Ci_v, Ci)
+  
+  #Inactivation holding time
+  thold<-rtri(1,min = 2,max = 8,mode = 4)
+  dhold<- -(thold/(2.45/24))^0.3
+  Chold = log10(Ci) + dhold
+  dhold_v<-c(dhold_v,dhold)
+}
+
+hist(dhold_v)
+descdist(dhold_v)
+
+fit.normal<-fitdist(dhold_v, "norm")
+fit.uniform<-fitdist(dhold_v, "unif")
+
+plot(fit.normal)
+plot(fit.uniform)
+```
+#Harvesting
+
+#Preahrvest + HArvesting Steps
+```{r}
+LogC_Ci<-c()
+LogC_hold_dieoff<-c()
+LogC_Chl_l_logincrease<-c()
+LogC_Wash<-c()
+for (i in 1:100){
+  
+  #Concentration after irrigation
+ Cw = runif(1,1,235)
+  Rw = 10^rtruncnorm(1,-Inf, 0, -1.9, 0.6)
+  W = 10^rtruncnorm(1,0, Inf, 0.108, 0.019)
+  Ci = (Cw/100)*Rw*W 
+  LogC_Ci<-c(LogC_Ci, log10(Ci)) #log increase because of irrigation
+  
+  #Inactivation holding time
+  thold<-rtri(1,min = 2,max = 8,mode = 4)
+  dhold<- -(thold/(2.45/24))^0.3
+  Chold = log10(Ci) + dhold
+  LogC_hold_dieoff<-c(LogC_hold_dieoff, (log10(Ci) -Chold )) #log decrease because of holding
+  
+  
+  #Harvest
+  Cs  = 10^rtruncnorm(1,0, 3.67, 0.928, 1.11)
+  Rs =  10^rtruncnorm(1,-Inf, 0, -1.9, 0.6)
+  M = 10.22
+  Nb = Cs * Rs* M #E.coli Cells in Blade
+  
+  Rtl = 0.0013
+  Nhl = Nb * Rtl
+  Chl = Nhl/1500
+  Chl_v<-c(Chl_v, log10(Chl))
+  Ch = 10^(Chold+Chl)
+  LogC_Chl_l_logincrease<-c(Chl_l_logincrease,log10(Ch-Chold)) #log increase for soil cross contamination
+  
+  #Processing
+  Prev0 = 0.1
+  ##washing
+  dw = rpert(1, 0.6,1,1.4)
+  Clw = Ch-dw 
+  LogC_Wash<-c(LogC_Wash, (Clw-Ch)) #log decrease because of washing
+  Cw = 10^Clw
+  ##Processing cross contamination
+  Nint = Cw*Prev0
+  Tr1 = rtriang(1,0,0.01,0.02)
+  Tr2 = rtriang(1,0,0.02,0.02)
+  Tr3 = rtriang(1,0,0.01,0.02)
+  Tr4 = rtriang(1,0.01,0.04,0.08)
+  Tr5 = rtriang(1,0,0.1,0.24)
+  
+  Ofu = rtriang(1,9.9,15.33,18.83)
+  Nfac = Nint * (Tr1 + Tr2 + Tr3 + Tr4 + Tr5)
+  Ntran = Nfac*Ofu
+  Nfinal = Nint - Nfac + Ntran
+  S = rpert(1,1,1.2,2)
+  Prevf = Prev0 * S
+  Cp = Nfinal/Prevf
+  
+  
+}
+
+hist(LogC_Ci) #Increase in contamination from irrigation water
+hist(LogC_hold_dieoff) #Decrease in contamination because of 2-8 day die off
+hist(LogC_Chl_l_logincrease) #Increase in contamination because of harvest cross-contamination
+hist(LogC_Wash) #Decrease in contamination because of washing
+
+
+
+```
+
