@@ -73,25 +73,46 @@ plot(fit.uniform)
 
 #Preahrvest + HArvesting Steps
 ```{r}
+
+Growth_mod<-function(Temp, Time){
+  b= 0.203
+  Tmin = 1.355-5.76*b
+  k = rlnorm(1,0.013,0.001)/ 2.303
+  growth_rate = (b * (Temp = Tmin))^(2/2.303)
+  Log_Change<-ifelse(Temp<5, growth_rate*Time, k*Time)
+}
+
+
 LogC_Ci<-c()
 LogC_hold_dieoff<-c()
 LogC_Chl_l_logincrease<-c()
 LogC_Wash<-c()
-for (i in 1:100){
-  
+LogC_Processing<-c()
+LogC_RetailS<-c()
+LogC_Tran<-c()
+LogC_H<-c()
+
+#Each Stage
+LogC_PH<-c()
+LogC_H<-c()
+LogC_Processing<-c()
+LogC_Retail<-c()
+LogC_Consumer<-c()
+
+
+for (i in 1:1000){
   #Concentration after irrigation
- Cw = runif(1,1,235)
+  Cw = runif(1,1,235)
   Rw = 10^rtruncnorm(1,-Inf, 0, -1.9, 0.6)
   W = 10^rtruncnorm(1,0, Inf, 0.108, 0.019)
   Ci = (Cw/100)*Rw*W 
-  LogC_Ci<-c(LogC_Ci, log10(Ci)) #log increase because of irrigation
+  LogC_Ci<-c(LogC_Ci, log10(Ci)) #Contamination caused by irrigation
   
   #Inactivation holding time
   thold<-rtri(1,min = 2,max = 8,mode = 4)
   dhold<- -(thold/(2.45/24))^0.3
   Chold = log10(Ci) + dhold
-  LogC_hold_dieoff<-c(LogC_hold_dieoff, (log10(Ci) -Chold )) #log decrease because of holding
-  
+  LogC_hold_dieoff<-c(LogC_hold_dieoff, Chold - log10(Ci)) #log decrease because of holding
   
   #Harvest
   Cs  = 10^rtruncnorm(1,0, 3.67, 0.928, 1.11)
@@ -102,17 +123,16 @@ for (i in 1:100){
   Rtl = 0.0013
   Nhl = Nb * Rtl
   Chl = Nhl/1500
-  Chl_v<-c(Chl_v, log10(Chl))
   Ch = 10^(Chold+Chl)
-  LogC_Chl_l_logincrease<-c(Chl_l_logincrease,log10(Ch-Chold)) #log increase for soil cross contamination
+  LogC_Chl_l_logincrease<-c(LogC_Chl_l_logincrease, log10(Ch)-Chold) #log increase for soil cross contamination
   
   #Processing
   Prev0 = 0.1
   ##washing
   dw = rpert(1, 0.6,1,1.4)
-  Clw = Ch-dw 
-  LogC_Wash<-c(LogC_Wash, (Clw-Ch)) #log decrease because of washing
+  Clw = log10(Ch)-dw 
   Cw = 10^Clw
+  LogC_Wash<-c(LogC_Wash, log10(Cw) - log10(Ch)) #log decrease because of washing
   ##Processing cross contamination
   Nint = Cw*Prev0
   Tr1 = rtriang(1,0,0.01,0.02)
@@ -128,6 +148,32 @@ for (i in 1:100){
   S = rpert(1,1,1.2,2)
   Prevf = Prev0 * S
   Cp = Nfinal/Prevf
+  LogC_Processing<-c(LogC_Processing,(log10(Cp)-log10(Cw))) #log change processing
+  
+  #Retail Storage
+  tr = rtriang(1,0.5,4,7)*24
+  Tr = rnormTrunc(1,4.4441,2.9642,0,20.56)
+  GR = Growth_mod(Temp = Tr, Time = tr)
+  ClR = ifelse((log10(Cp) + GR)>7,7,(log10(Cp) + GR))
+  LogC_RetailS<-c(LogC_RetailS,(ClR-log10(Cp)))
+  
+  #Transportation- retail to home
+  tTran = rlnormTrunc(n=1, meanlog = 1.421, sdlog = 0.4647, min = 0.1833, max = 3.8667)
+  TbH = rnormTrunc(n = 1,mean =8.386 ,sd =3.831 ,min =0,max =20 )
+  TTran = (1/2) * (Tr+TbH)
+  GTran = Growth_mod(Temp = TTran, Time = tTran)
+  ClTran = ifelse((ClR + GTran)>7,7,(ClR + GTran))
+  LogC_Tran<-c(LogC_Tran,(ClTran-ClR))
+  
+  #Home Storage
+  tf = rweibull(1,1.13,2.84) *24
+  tl = rweibull(1.7,7.96)*24
+  tH = (1/2) * (tf + tl)
+  TH = rnormTrunc(n = 1,mean =3.4517 ,sd =2.44 ,min =-5,max =17.22 )
+  GH = Growth_mod(Temp = TH, Time = tH)
+  ClH = ifelse((ClTran + GH)>7,7,(ClTran + GH))
+  LogC_H<-c(LogC_H,(ClH-ClTran))
+  
   
   
 }
@@ -136,8 +182,17 @@ hist(LogC_Ci) #Increase in contamination from irrigation water
 hist(LogC_hold_dieoff) #Decrease in contamination because of 2-8 day die off
 hist(LogC_Chl_l_logincrease) #Increase in contamination because of harvest cross-contamination
 hist(LogC_Wash) #Decrease in contamination because of washing
+hist(LogC_Processing) #change in contamination because of processing cross-contamination
+hist(LogC_RetailS)
+hist(LogC_Tran)
+hist(LogC_H)
+
+#Each Stage
 
 
+
+#log increase
+#log10(1000) - log10(10)
 
 ```
 

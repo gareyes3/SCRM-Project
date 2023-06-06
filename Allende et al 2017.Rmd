@@ -1,0 +1,102 @@
+---
+title: "Allende et al. 2017"
+output: html_document
+date: "2023-06-06"
+---
+
+#Libraries
+```{r}
+library(truncnorm)
+library(fitdistrplus)
+library(EnvStats)
+library(mc2d)
+```
+
+
+```{r}
+set.seed(100)
+decay_effect<-c()
+load_final<-c()
+track_seed<-c()
+for (i in 1:10000){
+  Days<- round(rpert(1,32,36.8,43.0)) #winter round(rpert(1,51,56.7,67)) #Baseline round(rpert(1,32,36.8,43.0))
+  Rain_Days<-rpert(1,1,5.6,14) 
+  P_Sun <- 1 - Rain_Days/Days
+  Sun <- rbinom(Days, 1, P_Sun)
+  Ec0_soil <-rnorm(1,0.549,0.816)
+  P_Ec_Water<-0.35
+  Ecoli_Irr_Water<-rbinom(Days,1,P_Ec_Water)
+  C_Ecoli_Irr_Water<-(10^(rnorm(Days,0.604,0.357)))/100
+  
+  Trans_Irr_Water <-runif(Days, 1.8, 21.6)
+  Sun_hrs<-rpert(Days, 5, 10.4,12)
+  Irr_Splashing<-rpert(Days, 0.02, 0.04, 0.06)
+  P_Irr_Splashing<-rbinom(Days, 1, Irr_Splashing)
+  P_Rain_Spashing<-1
+  Soil_Transfer<-rbetagen(Days, 0.4, 0.8, 0.05, 16.4)
+  P_Bug_Plant<-runif(Days, 0.35, 0.9)
+  C_Irr<-round(C_Ecoli_Irr_Water * Trans_Irr_Water* Ecoli_Irr_Water* Sun)
+  C_RSp<-round(10^(Ec0_soil) * Soil_Transfer * P_Bug_Plant * P_Rain_Spashing * (1- Sun)) 
+  C_IrrSp<-round(10^(Ec0_soil) * Soil_Transfer * P_Bug_Plant * P_Irr_Splashing * Sun)
+
+  C_load<-C_Irr + C_RSp + C_IrrSp
+  Sun_Decay<-(-0.52 * (Sun_hrs/24))#Baseline -0.52  #Sun Decay No solar −0.18 
+  ifelse(C_load>0, 10^(log10(C_load)+Sun_Decay),C_load)
+}
+
+mean(load_final)
+
+aaa<-c(1,2,0,3,4)
+b<-c(-.5,-.4,-1,-5,-4)
+
+Current_Cont = 0
+for (i in 1:len(aaa)){
+  Cont_day<-aaa[i]
+  Dieoff_day = b[i]
+  Updated_Cont_Day = ifelse(Cont_day>0, 10^(log10(Cont_day)+Dieoff_day),Cont_day)
+  Current_Cont = Current_Cont+Updated_Cont_Day
+}
+
+
+#Baseline Scenario
+Baseline_Scen<-load_final
+#Sun_Decay
+SunDecay_Scen<-load_final
+#Sun Decay_No Solar
+SunDecay_NoRad_Scen<-load_final
+#Winter
+Winter_Scen<-load_final
+#No Rain
+No_Rain_Scen<-load_final
+
+
+mean(SunDecay_Scen) mean(Baseline_Scen)
+
+#Sun Decay Effect
+SunDecay_Change<-log10(SunDecay_Scen) - log10(Baseline_Scen)
+hist(SunDecay_Change)
+
+#Sun Decay No Rad
+SunDecay_NoRad_Change<-log10(SunDecay_NoRad_Scen) - log10(Baseline_Scen)
+hist(SunDecay_NoRad_Change)
+
+#Winter Effect
+Winter_Change<-log10(Winter_Scen) - log10(Baseline_Scen)
+hist(Winter_Change)
+
+#No Rain
+No_Rain_Change<-log10(No_Rain_Scen) - log10(Baseline_Scen)
+hist(No_Rain_Change)
+
+
+hist(decay_effect)
+decay_effect<-na.omit(decay_effect)
+decay_effect<-as.vector(decay_effect)
+descdist(decay_effect)
+
+fit.lnorm<-fitdist(-decay_effect, "gamma")
+plot(fit.lnorm)
+
+hist(-rgamma(10000,0.563200,3.427781))
+```
+
