@@ -10,6 +10,8 @@ library(truncnorm)
 library(fitdistrplus)
 library(EnvStats)
 library(mc2d)
+library(ggplot2)
+library(tidyverse)
 ```
 
 
@@ -23,7 +25,7 @@ for (i in 1:10000){
   Rain_Days<-rpert(1,1,5.6,14) 
   P_Sun <- 1 - Rain_Days/Days
   Sun <- rbinom(Days, 1, P_Sun)
-  Ec0_soil <-rnorm(1,0.549,0.816)
+  Ec0_soil <-rnorm(1,0.549,0.816)#*2
   P_Ec_Water<-0.35
   Ecoli_Irr_Water<-rbinom(Days,1,P_Ec_Water)
   C_Ecoli_Irr_Water<-(10^(rnorm(Days,0.604,0.357)))/100
@@ -40,22 +42,13 @@ for (i in 1:10000){
   C_IrrSp<-round(10^(Ec0_soil) * Soil_Transfer * P_Bug_Plant * P_Irr_Splashing * Sun)
 
   C_load<-C_Irr + C_RSp + C_IrrSp
-  Sun_Decay<-(-0.52 * (Sun_hrs/24))#Baseline -0.52  #Sun Decay No solar −0.18 
-  ifelse(C_load>0, 10^(log10(C_load)+Sun_Decay),C_load)
+  Sun_Decay<-0#(-0.52 * (Sun_hrs/24))#Baseline -0.52  #Sun Decay No solar −0.18 #winter - 0.48
+  C_Final = ifelse(C_load>0, 10^(log10(C_load)+Sun_Decay),C_load)
+  load_final<-c(load_final,sum(C_Final))
 }
 
 mean(load_final)
-
-aaa<-c(1,2,0,3,4)
-b<-c(-.5,-.4,-1,-5,-4)
-
-Current_Cont = 0
-for (i in 1:len(aaa)){
-  Cont_day<-aaa[i]
-  Dieoff_day = b[i]
-  Updated_Cont_Day = ifelse(Cont_day>0, 10^(log10(Cont_day)+Dieoff_day),Cont_day)
-  Current_Cont = Current_Cont+Updated_Cont_Day
-}
+hist(log10(load_final))
 
 
 #Baseline Scenario
@@ -68,7 +61,94 @@ SunDecay_NoRad_Scen<-load_final
 Winter_Scen<-load_final
 #No Rain
 No_Rain_Scen<-load_final
+# No Overhead Irrigation
+No_Overhead<-load_final
+#Increase soil contmaination
+Increase2_Soil_Cont<-load_final
 
+df_effects<-data.frame("valueCFU" = c(Baseline_Scen,SunDecay_Scen,SunDecay_NoRad_Scen,Winter_Scen,No_Rain_Scen,No_Overhead,Increase2_Soil_Cont),
+           "scenario" = c(rep("Baseline", 10000),rep("With Sun Decay", 10000) ,rep("With Sun Decay Low Rad", 10000), rep("Winter", 10000), rep("No Rain", 10000),rep("No OVerhead", 10000), rep("2X soil cont", 10000)) )
+
+df_effects$logvalue = log10(df_effects$valueCFU)
+
+df_effects %>% 
+  ggplot(aes(x = logvalue, fill = scenario))+
+  geom_density(alpha = 0.5)+
+  theme_bw()+
+  facet_wrap(~scenario)+
+  labs( x = "Log CFU/g")
+
+
+
+df_effects_quantiles<-data.frame("valueCFU" = c((quantile(log10(Baseline_Scen), seq(0.001,1,0.001))),
+                                      (quantile(log10(SunDecay_Scen), seq(0.001,1,0.001))),
+                                      (quantile(log10(SunDecay_NoRad_Scen), seq(0.001,1,0.001))),
+                                      (quantile(log10(Winter_Scen), seq(0.001,1,0.001))),
+                                      (quantile(log10(No_Rain_Scen), seq(0.001,1,0.001))),
+                                      (quantile(log10(No_Overhead), seq(0.001,1,0.001))),
+                                      (quantile(log10(Increase2_Soil_Cont), seq(0.001,1,0.001)))),
+           "scenario" = c(rep("Baseline", 1000),rep("With Sun Decay", 1000) ,rep("With Sun Decay Low Rad", 1000), rep("Winter", 1000), rep("No Rain", 1000),rep("No OVerhead", 1000), rep("2X soil cont", 1000)),
+           "quantile" = rep(seq(0.001,1,0.001),7))
+
+
+df_effects_quantiles %>% 
+  ggplot(aes( x = quantile, y = valueCFU, color = scenario))+
+  geom_line(size= 1)+
+  theme_bw()+
+  labs(x = "Quantiles", y = "Log CFU/g")
+
+
+df_effects_quantiles<-data.frame("valueCFU" = c((quantile(log10(Baseline_Scen), seq(0.001,1,0.001)))-(quantile(log10(Baseline_Scen), seq(0.001,1,0.001))),
+                                      (quantile(log10(SunDecay_Scen), seq(0.001,1,0.001)))-(quantile(log10(Baseline_Scen), seq(0.001,1,0.001))),
+                                     (quantile(log10(SunDecay_NoRad_Scen), seq(0.001,1,0.001)))-(quantile(log10(Baseline_Scen), seq(0.001,1,0.001))),
+                                      (quantile(log10(Winter_Scen), seq(0.001,1,0.001)))-(quantile(log10(Baseline_Scen), seq(0.001,1,0.001))),
+                                     (quantile(log10(No_Rain_Scen), seq(0.001,1,0.001)))-(quantile(log10(Baseline_Scen), seq(0.001,1,0.001))),
+                                     (quantile(log10(No_Overhead), seq(0.001,1,0.001)))-(quantile(log10(Baseline_Scen), seq(0.001,1,0.001))),
+                                      (quantile(log10(Increase2_Soil_Cont), seq(0.001,1,0.001)))-(quantile(log10(Baseline_Scen), seq(0.001,1,0.001)))),
+           "scenario" = c(rep("Baseline", 1000),rep("With Sun Decay", 1000) ,rep("With Sun Decay Low Rad", 1000), rep("Winter", 1000), rep("No Rain", 1000),rep("No OVerhead", 1000), rep("2X soil cont", 1000)),
+           "quantile" = rep(seq(0.001,1,0.001),7))
+
+
+df_effects_quantiles %>% 
+  ggplot(aes( x = quantile, y = valueCFU, color = scenario))+
+  geom_line(size= 1)+
+  theme_bw()+
+  labs(x = "Quantiles", y = "Log CFU/g")
+
+
+
+
+sd((quantile(log10(Baseline_Scen), seq(0.001,1,0.001)))-(quantile(log10(Baseline_Scen), seq(0.001,1,0.001))))
+sd((quantile(log10(Baseline_Scen), seq(0.001,1,0.001)))-(quantile(log10(SunDecay_Scen), seq(0.001,1,0.001))))
+sd((quantile(log10(Baseline_Scen), seq(0.001,1,0.001)))-(quantile(log10(SunDecay_NoRad_Scen), seq(0.001,1,0.001))))
+sd((quantile(log10(Baseline_Scen), seq(0.001,1,0.001)))-(quantile(log10(Winter_Scen), seq(0.001,1,0.001))))
+sd((quantile(log10(Baseline_Scen), seq(0.002,1,0.001)))-(quantile(log10(No_Rain_Scen), seq(0.002,1,0.001))), na.rm = T)
+hist((quantile(log10(No_Overhead), seq(0.035,1,0.001)))-(quantile(log10(Baseline_Scen), seq(0.035,1,0.001))), na.rm = T)
+sd((quantile(log10(Baseline_Scen), seq(0.035,1,0.001)))-(quantile(log10(Increase2_Soil_Cont), seq(0.035,1,0.001))), na.rm = T)
+
+
+No_Rain_Scen[!is.na(No_Rain_Scen) & !is.infinite(No_Rain_Scen)]
+
+
+hist(log10(Baseline_Scen), freq = F)
+lines(x = density(x = log10(Baseline_Scen)), col = "red")
+lines(x = density(x = log10(SunDecay_Scen)), col = "blue")
+lines(x = density(x = log10(SunDecay_NoRad_Scen)), col = "green")
+lines(x = density(x = log10(Winter_Scen)), col = "orange")
+lines(x = density(x = log10(SunDecay_NoRad_Scen)), col = "pink")
+
+hist((quantile(log10(SunDecay_Scen), seq(0.001,1,0.001))) - (quantile(log10(Baseline_Scen), seq(0.001,1,0.001))), na.rm = T)
+hist((quantile(log10(SunDecay_NoRad_Scen), seq(0.001,1,0.001))) - (quantile(log10(Baseline_Scen), seq(0.001,1,0.001))), na.rm = T)
+
+plot(quantile(log10(SunDecay_NoRad_Scen), seq(0,1,0.001)))
+
+
+disdecay<-((quantile(log10(SunDecay_Scen), seq(0,1,0.001))) - (quantile(log10(Baseline_Scen), seq(0,1,0.001))))
+disdecay<-na.omit(disdecay)
+disdecay<-as.vector(disdecay)
+
+
+dist_decay<-descdist(disdecay)
 
 mean(SunDecay_Scen) mean(Baseline_Scen)
 
