@@ -63,7 +63,7 @@ Winter_Scen<-load_final
 No_Rain_Scen<-load_final
 # No Overhead Irrigation
 No_Overhead<-load_final
-#Increase soil contmaination
+#Increase soil contamination
 Increase2_Soil_Cont<-load_final
 
 df_effects<-data.frame("valueCFU" = c(Baseline_Scen,SunDecay_Scen,SunDecay_NoRad_Scen,Winter_Scen,No_Rain_Scen,No_Overhead,Increase2_Soil_Cont),
